@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+		<title>Smart Hjem</title>
+		<meta charset="utf-8">
+
+	  	<link href="lib/dist/css/bootstrap.css" rel="stylesheet">	  	
+	  	<link href="lib/dist/css/bootstrap.min.css" rel="stylesheet">
+	  	<link href="lib/dist/css/bootstrap-theme.css" rel="stylesheet">
+	  	<link href="lib/dist/css/bootstrap-responsive.css" rel="stylesheet">
+		<link href="lib/jqueryUI-css/smoothness/jquery-ui-1.10.4.custom.min.css" rel="stylesheet">
+  		<link href="lib/bootstrap-formhelpers/css/bootstrap-formhelpers.min.css" rel="stylesheet">
+	  	<link href='lib/fullcalendar-1.6.4/fullcalendar/fullcalendar.css' rel='stylesheet' type='text/css' />		
+		<link rel="stylesheet" type="text/css" href="css/style.css">
+		<link rel="stylesheet" type="text/css" href="css/heating.css">
+
+		<script type="text/javascript" src="lib/jQuery.js"></script>	
+		<script type="text/javascript" src="lib/jquery-ui-1.10.4.custom.min.js"></script>	
+		<script type="text/javascript" src="/socket.io/socket.io.js"></script>
+		<script type="text/javascript" src="lib/dist/js/bootstrap.js"></script>	
+		<script type="text/javascript" src="lib/bootstrap-formhelpers/js/bootstrap-formhelpers.js"></script>	
+		<script type="text/javascript" src="lib/moment-with-langs.min.js"></script>	
+		<script type="text/javascript" src="lib/fullcalendar-1.6.4/fullcalendar/fullcalendar.js"></script>	
+		<script type='text/javascript' src='lib/fullcalendar-1.6.4/fullcalendar/gcal.js'></script>		
+		<script type="text/javascript" src="lib/bind.js"></script>
+		<script type="text/javascript" src="lib/simple.js"></script>
+		<script type="text/javascript" src="lib/mustache.js"></script>
+		<script type="text/javascript" src="lib/jquery.parse.js"></script>
+		<script type="text/javascript" src="lib/highstock/highstock.js"></script>
+		<script type="text/javascript" src="lib/KineticJS-master/kinetic.js"></script>
+
+		<script type="text/javascript" src="data/elArticlesUsage.js"></script> 
+		<script type="text/javascript" src="js/SH.Utils.js"></script> 
+
+		<script type="text/javascript" src="js/models/CurrentUsageModel.js"></script>
+		<script type="text/javascript" src="js/models/InteractiveHomeModel.js"></script>		
+		<script type="text/javascript" src="js/models/ElDeviceInfoBoxModel.js"></script> 
+		<script type="text/javascript" src="js/models/HeatingModel.js"></script> 
+
+		<script type="text/javascript" src="js/views/CurrentUsageGraphView.js"></script> 
+		<script type="text/javascript" src="js/views/ElDeviceInfoBoxView.js"></script> 
+		<script type="text/javascript" src="js/views/HeatingView.js"></script> 
+</head>
+	
+	<body>
+		<script type="text/javascript">
+            $(function(){                                                     
+
+              	var socket = io.connect('http://localhost');   
+			  
+	    		if(window.powerPrices == undefined){
+				    $.ajax({
+			              url: "data/stromTrondheim.csv",
+			              success: function(data){
+			              	   window.powerPrices = SH.Utils.parseFile(data);    
+			              	   Simple.Events.trigger("powerPrices:fetched");	              
+			              }
+			        });
+	        	} 
+	        	if(window.weekForecast == undefined){
+				   SH.Utils.parseWeatherFile(); 
+	        	} 
+
+            	moment.lang('nb');
+
+  				var interactiveHomeModel = new SH.InteractiveHomeModel();
+            	var heatingModel = new SH.HeatingModel();
+            	var heatingView = new SH.HeatingView({ el: $("#heating"), model: heatingModel });
+
+            				    
+			    $('.nav a').click(function (e) {
+			    	if($(this).parent('li').hasClass('active') && $(this).context.hash != e.currentTarget.hash){
+				        $( $(this).attr('href') ).hide();
+				    }
+				    else {
+				        e.preventDefault();
+				        $(this).tab('show');    
+				    }
+				});		
+
+            });                
+        </script>
+
+       <nav class="navbar navbar-default" role="navigation">
+		  <div class="container-fluid">
+		    <div class="navbar-header">
+		      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+		        <span class="sr-only">Toggle navigation</span>
+		        <span class="icon-bar"></span>
+		        <span class="icon-bar"></span>
+		        <span class="icon-bar"></span>
+		      </button>
+		      <a class="navbar-brand" href="#">Smart Hjem</a>
+		    </div>
+
+		    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+		      <ul class="nav navbar-nav">
+		        <li class="active"><a href="#myhome">Mitt hjem</a></li>
+		        <li><a href="#heating">Oppvarming</a></li>
+		        <li><a href="#about">Om</a></li>
+		      </ul>
+		      
+		    </div>
+		  </div>
+		</nav>
+
+    <div class="container">
+
+    	 <div class="fade in active" id="myhome">
+	    	<div class="current-usage-graph-view"> </div>
+		    <div class="total-info-wrapper"> </div>
+
+		  	<div class="main">	
+		        <div class="interactive-home"> 
+		        	<div class="house-cover">
+		     			<div id="home"></div>    
+		     		</div>	
+		        </div>
+		       <div class="elDevice-infobox"></div>
+		       <div class="elDevice-graph"></div>
+
+		       <div class="expected-usage-graph-view"> </div>
+		    </div>
+		</div>		
+
+		<div class="fade" id="heating">
+         	<div class="calendar"> </div>
+         	<div class="settings-wrapper">
+
+         		<label> Komfortemperatur </label> <div class="bfh-slider" data-name="comfort" data-value="20" data-min="5" data-max="30">  </div>       	
+         		<label> Nedre grense </label> <div class="bfh-slider" data-name="lowlimit" data-value="15" data-min="5" data-max="30"> </div>
+         		<label> Antall dager </label> <div class="bfh-slider" data-name="days" data-value="1" data-min="1" data-max="6"> </div>
+ 		   		<label> Pris vs komfort </label> <div class="bfh-slider" data-name="weighting" data-value="0" data-min="-10" data-max="10"> </div>
+
+         		<div class="btn btn-default" type='button' name="simulate">Simulér</div>	
+         		<div class="error-msg"></div>	
+         		<div id="progressbar"></div>
+
+         		<div class="simulation-temperatur-graph"></div>
+         		<div class="cost-table"> 
+         			  <table class="table table-striped table-bordered table-condensed table-hover">
+						   <thead>
+						    <tr> 
+						    	<th>Nr</th>
+						        <th>Komfortemperatur</th>
+						        <th>Nedre grense</th>
+						        <th>Dager</th>
+						        <th>Gj. kostnad per dag</th>
+						        <th>Innsparing</th>
+						    </tr>
+						    </thead>
+				    	  <tr>
+			    	  		<td> - </td>
+						    <td> 20 </td>
+						    <td> 15 </td>
+						    <td> Nå </td>
+						    <td> 23 kr </td>
+					        <td > 0 % </td>
+						  </tr>						
+						</table>
+         		</div>
+         	</div>         	
+	    </div>
+
+	     <div class="fade" id="about">
+         	© Laget av Maja Charlotte Otnes og Carl Joachim Rørvik - Norges teknisk-naturvitenskapelige universitet - 2014. - Kontakt: carljoac@gmail.com 
+	    </div>
+
+	</div>
+		
+	</body>
+
+</html>

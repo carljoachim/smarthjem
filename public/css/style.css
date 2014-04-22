@@ -1,0 +1,119 @@
+body{
+	padding-bottom: 40px;
+}
+
+label{
+	display: inline-block;
+	font-weight: bold;
+	margin: 4px;
+}
+
+.weather-graph{
+
+
+}
+.power-price{
+
+}
+
+.main {
+	position: absolute;
+}
+
+.current-usage-graph-view{
+	position: absolute;
+	left: 60%;
+}
+.current-usage-graph-view2{
+	float: left;
+}
+
+.house-cover{
+	background: url("../../img/house.png") no-repeat;
+	background-size: 100%;
+}
+
+.interactive-home{
+	position: relative;
+	left: -70px;
+}
+
+
+.elDevice-infobox{	
+	border: 2px solid black;
+	position: relative;
+	top: -138px;
+	left: -14px;
+	width: 85%;
+}
+
+.elDevice-infobox-close{
+    float: right;
+    cursor: pointer;
+}
+
+.elDevice-infobox-logo{
+	float: left;
+	padding: 2px;
+	width: 16%;
+	height: 20%;
+}
+
+.elDevice-infobox-header{
+	float: left;
+	padding-top: 13px;
+	font-size: 22px;
+	margin-left: 6px;
+}
+
+.elDevice-infobox-data{
+	padding: 10px;
+	margin-top: 40px;
+
+}
+
+.elDevice-infobox-graph{
+	background: url("../../img/icons/graph.png") no-repeat;
+	display: inline-block;
+	
+	height: 30px;
+	width: 30px;
+	background-size: 100%;
+	cursor: pointer;
+	float: right;
+}
+
+.elDevice-graph{
+	position: relative;
+	top: -100px;
+}
+
+.elDevice-infobox-stats{
+	border-left: 1px solid black;
+	width: 400px;
+	height: 148px;
+	float: right;
+}
+
+.total-info-wrapper{
+	position: absolute;
+	border: 1px solid black;
+	left: 60%;
+	top: 70%;
+	width: 30%;
+	height: 15s%;
+
+}
+
+.fade{
+	visibility: hidden;
+}
+
+.fade.in{
+	visibility: visible;
+}
+
+#about{
+	position: absolute;
+	top: 100px;
+}
