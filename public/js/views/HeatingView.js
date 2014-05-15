@@ -2,7 +2,8 @@
     SH.HeatingView = Simple.View.extend({
  			
     		events: {
- 				"click [name=simulate]" : "simulate"
+ 				"click [name=simulate]" : "simulate",
+ 				"click .activate-button" : "activateAlert"
  			},
 
 	    	newCalculatedDataString: "",
@@ -15,6 +16,7 @@
 	            Simple.Events.on("new-simulated-data", this.controlMatlabData.bind(this));
                 Simple.Events.on("finish-parsing-matlabsimulation", this.finishParsingMatlabsimulation);
                 Simple.Events.on("got-complete-data-string", this.generateOrUpdateTempSimulationGraph.bind(this));
+
 
 				$(document).keyup(function(e) {
 				  if (e.keyCode == 46) { 
@@ -58,6 +60,8 @@
 	    		this.matlab.ActivityList = activityList;
 	    		this.matlab.HoursToSimulate = daysToSimulate * SH.Utils.HoursInDay;
 	    		this.matlab.Weighting = weighting;
+	    		this.matlab.ComfortTemp = comfortTemp;
+	    		this.matlab.LimitTemp = limitTemp;
 
 	    		this.currentComfort = comfortTemp;
 				this.currentLimit = limitTemp;	   
@@ -67,6 +71,10 @@
 	    		$("#progressbar").show();
 	    		this.progressBar(daysToSimulate);
 	    		
+	    	},
+	    	activateAlert: function(){
+
+	    		bootbox.alert("Nye temperaturinnstillinger aktivert");
 	    	},
 	    	getVisibleEvents: function(){
 	    		var eventsList = [];
@@ -197,7 +205,7 @@
 	    	},
 	    	addTableElement: function(simulationObject, number){
 	    		var dailyCost = (simulationObject.Cost / this.currentNumOfDays).toFixed(1);
-	    		var percentage = ((23 - dailyCost) * 100  / 23).toFixed(1);    		
+	    		var percentage = ((13 - dailyCost) * 100  / 13).toFixed(1);    		
 	    		
 	    		 var tableRow = "<tr>" +
 	    		 					"<td>" + number + "</td>" +
@@ -206,6 +214,7 @@
 	    		 					"<td>" + this.currentNumOfDays + "</td>" +
 	    		 					"<td>" + dailyCost.replace(".", ",") + " kr </td>" +
 	    		 					"<td class='percentage' data-nr=" + number + ">" + percentage + " % </td>" +
+	    		 					"<td > <button class='activate-button'>Ok</button> </td> " +
 	    						"</tr>";	    						
 
 	    		 $(".cost-table").find("table").append(tableRow);
