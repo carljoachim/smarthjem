@@ -4,7 +4,7 @@ function data = runSimulation(obj,~)
     if(data(1) == '{' && data(2) == '"')    
         data = JSON.parse(data);
         timeToSimulate = data.HoursToSimulate;
-        [Req, c, C_heater, Mdot, M, T_init, amp, ComfortTemp] = MPCinit(data);
+        [K_eq, c, C_heater, Mdot, M, T_init, amp, ComfortTemp] = MPCinit(data);
         options = simset('SrcWorkspace','current');          
         fprintf('Startet ny simulering - Vennligst vent...\n');        
         [t, x, y] = sim('MPC', timeToSimulate, options);

@@ -196,7 +196,7 @@
 
           var hoursCount = 0;
 
-          while(startOfDay + hoursCount <= nearestHour + timeSpan){
+          while(startOfDay + hoursCount <= nearestHour + timeSpan){            
               for (var i = 0; i < events.length; i++) {
                  if(events[i].start.getTime() == startOfDay + hoursCount){
                       if(events[i].end.getTime() > nearestHour && events[i].start.getTime() <= nearestHour){                                           
@@ -214,6 +214,14 @@
                            hoursToEnd += SH.Utils.OneHour;
                         }
                         hoursCount = events[i].end.getTime() - startOfDay;
+                      }                      
+                      if(events[i].end.getTime() > nearestHour + timeSpan && events[i].start.getTime() > nearestHour){
+                        var hoursToEnd = 0;
+                        while(startOfDay + hoursCount + hoursToEnd < events[i].end.getTime()){
+                           relevantEvents.push(events[i].start.getTime() + hoursToEnd);
+                           hoursToEnd += SH.Utils.OneHour;
+                        }
+                        hoursCount = events[i].end.getTime() - startOfDay;
                       }
                   }
                }
@@ -225,9 +233,8 @@
 
          
           while(hourCounter <= nearestHour.getTime() + timeSpan - SH.Utils.OneHour){
-              for (var i = 0; i < relevantEvents.length; i++) {
-
-                 if(relevantEvents[i] == hourCounter){            
+              for (var i = 0; i < relevantEvents.length; i++) {             
+                 if(relevantEvents[i] == hourCounter){                               
                     activityList.push(comfortTemp);
                     hourCounter += SH.Utils.OneHour;
                     continue;

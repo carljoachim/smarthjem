@@ -1,10 +1,8 @@
 
-function [Req, c, C_heater, Mdot, M, T_init, amp, ComfortTemp] = MPCinit(data)
+function [K_eq, c, C_heater, Mdot, M, T_init, amp, ComfortTemp] = MPCinit(data)
  
 
-    %% Definer konstandene i den termiske modellen av huset
-
-%% Problem konstanter
+    %% Konstante parametre til termisk modell
 
     % Husets geometri:
     lenHouse = 20; 
@@ -32,8 +30,7 @@ function [Req, c, C_heater, Mdot, M, T_init, amp, ComfortTemp] = MPCinit(data)
     
     % Beregn total varmetapstall:
     K_eq = K_wall + K_window;
-    Req = 1/K_eq;
-    
+        
     % Spesifikk varmekapasitet til luft (J/kg-K)
     c = 1005.4; 
 
@@ -65,15 +62,15 @@ function [Req, c, C_heater, Mdot, M, T_init, amp, ComfortTemp] = MPCinit(data)
     end
     
     ComfortTemp = str2double(data.ComfortTemp);     
-    averageTemp = (ComfortTemp+ActivityList(1))/2;
-    T_init = averageTemp;
+    %averageTemp = (ComfortTemp+ActivityList(1))/2;
+    T_init = ActivityList(1);
      
     
     %% Gj?r om til riktig format til MPC
 
     horizon = 2; % Prediksjonshorisont (t)
     delta = 5/60; % Tidssteg i diskret modell (t)
-    n = horizon/delta; % antall tidssteg i prediksjonshorisonten
+    n = horizon/delta; % Antall tidssteg i prediksjonshorisonten
 
     time = clock; % N?v?rende dato og klokkeslett
     min = time(5); % Antall min over forrige hele time
@@ -81,7 +78,7 @@ function [Req, c, C_heater, Mdot, M, T_init, amp, ComfortTemp] = MPCinit(data)
     
     hoursToSimulate = data.HoursToSimulate; 
     
-    for i=0:1:(hoursToSimulate*60) %antall minutter i simulering
+    for i=0:1:(hoursToSimulate*60) %Antall minutter i simulering
         
         estimertUteT(1,i+1) = i/60;
         estimertPris(1,i+1) = i/60;

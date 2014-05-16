@@ -52,7 +52,8 @@
 	    		var comfortTemp = $("[data-name=comfort]").val(); 	
 	    		var limitTemp = $("[data-name=lowlimit]").val();
 	    		var events = this.getVisibleEvents();
-
+			    
+			    console.log(events);	
 	    		var activityList = SH.Utils.getActivityList(daysToSimulate, events, comfortTemp, limitTemp);
 
 	    		this.matlab.PowerPrices = powerPrices;
@@ -205,7 +206,7 @@
 	    	},
 	    	addTableElement: function(simulationObject, number){
 	    		var dailyCost = (simulationObject.Cost / this.currentNumOfDays).toFixed(1);
-	    		var percentage = ((13 - dailyCost) * 100  / 13).toFixed(1);    		
+	    		var percentage = ((10 - dailyCost) * 100  / 10).toFixed(1);    		
 	    		
 	    		 var tableRow = "<tr>" +
 	    		 					"<td>" + number + "</td>" +

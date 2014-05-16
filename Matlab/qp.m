@@ -11,7 +11,7 @@ function setup(block)
   block.NumInputPorts  = 6;
   block.NumOutputPorts = 1;
 
-  %% 
+  %% Sette dimensjoner p? inngang- og utgangsblokker
   block.SetPreCompInpPortInfoToDynamic;
   block.SetPreCompOutPortInfoToDynamic;
   
@@ -25,7 +25,6 @@ function setup(block)
   block.OutputPort(1).dimensions = 1;
 
   %% Sett samplingsintervallet
-  %block.SampleTimes = [1/60 0];
   block.SampleTimes = [5/60 0];
   
   %% Sette simStateCompliance til default
@@ -34,7 +33,7 @@ function setup(block)
   %% Kj?re akselerator p? TLC
   block.SetAccelRunOnTLC(true);
   
-  %% Register methods  
+  %% Metoder  
   block.RegBlockMethod('PostPropagationSetup', @DoPostPropSetup);
   block.RegBlockMethod('InitializeConditions', @InitializeConditions);
   block.RegBlockMethod('Outputs', @Output);  
@@ -43,6 +42,8 @@ function setup(block)
 end
 
 function DoPostPropSetup(block)
+  %% definer Dwork variabler 
+  %(variabler som lagres i blokken mellom hver iterasjon, brukes til integralvirkning)
 
   block.NumDworks = 2;
 
@@ -70,8 +71,13 @@ end
 
 function Output(block)
     %% MPC
+    %% Sett tidshorisont og diskretiseringsintervall
+    N = 2; % (t)
+    delta = 5/60; % (t)
     
-    %% Ta imot inngangsvardiene
+    %n = N/delta; % antall tidssteg i prediksjonshorisonten (uten inngangsblokkering)
+    
+    %% Ta imot inngangsverdiene
     B2_raw = block.InputPort(1).Data; % Tidsplan over temperaturkrav
     T_out_raw = block.InputPort(2).Data; % Forventet utetemperaturer -> fra v?rmelding
     P_raw = block.InputPort(3).Data; % Forventet pris for 1kwh
@@ -81,15 +87,8 @@ function Output(block)
     %% Hent Dwork verdiene
     T_prev = block.Dwork(1).Data;
     eps = block.Dwork(2).Data;
-
-    %% Sett tidshorisont og diskretiseringsintervall
-    N = 2; % (t)
-    delta = 5/60; % (t)
     
-    %n = N/delta; % antall tidssteg i prediksjonshorisonten (uten input blokkering)
-    
-    %% Input blokkering
-    
+    %% Inngangsblokkering    
     %Definer to ulike intervallsteg:
     delta1 = delta;
     delta2 = delta*2; 
@@ -135,7 +134,7 @@ function Output(block)
    
    
 
-    %% Problem konstanter
+    %% Konstante parametre
 
     % Husets geometri:
     lenHouse = 20; 
@@ -171,7 +170,7 @@ function Output(block)
     THeater = 20;
 
     % Hastighet luft oppvarmes = 0.2 kg/sek = 3600*0.2 kg/t
-    Mdot = 3600*0.2;  % hour is the time unit
+    Mdot = 3600*0.2;  
 
     %Beregn total masse av luft i boligen
     densAir = 1.2250; % Lufttetthet ved havniv? (kg/m^3)
@@ -182,7 +181,7 @@ function Output(block)
     err = (T0 - T_prev)/Delta(1); % Feil mellom estimet temp og m?lt temp etter ett samplingsintervall
     Err = (err + eps)*Delta';
     
-    %% Likhetsbegrensninger (med input blokkering)
+    %% Likhetsbegrensninger (med inngangsblokkering)
 
     k11 = (delta1*K_eq)/(M*c) - 1;
     k21 = -(THeater*Mdot*delta1)/M;
@@ -203,7 +202,7 @@ function Output(block)
         end
     end
     
-    Beq = Beq + Err; % Integralvirkning - Korrigerer for feil
+    %Beq = Beq + Err; % Integralvirkning - Korrigerer for feil
     
     %% Ulikhetsbegrensninger
     
@@ -235,6 +234,7 @@ function Output(block)
 
     %% Formuler matrisene til objektivfunksjonen
     
+    %Vekting av temperaturendring
     ampS = 0; %0.001*ampR; 
     
     s = zeros(n,n);
@@ -245,13 +245,15 @@ function Output(block)
     s(n,:) = [zeros(1,n-2) -1/Delta(n) 1/Delta(n)];
     S = [s zeros(n,n); zeros(n,2*n);];
     
+    %Vekting av pris
     R = ampR*diag((Delta.*P).^2);
-    H = ampH*[I -I; -I I;] + ampS*S;
+    %Vekting av komfort
+    H = ampH*[I -I; -I I;];
     
     Q = [R zeros(n, 2*n);
-        zeros(2*n, n) H;];
+        zeros(2*n, n) (H+ampS*S);];
     
-    %% Mixed integer progammering (Kommenter ut ved bruk av quadprog!)
+    %% Blandet heltall progammering (Kommenter ut ved bruk av quadprog!)
 
 %     Tk = sdpvar(n,1);
 %     T = sdpvar(n,1);
@@ -272,7 +274,7 @@ function Output(block)
 %     T_est = double(temp(1));
 %   
 
-    %% Kvadratisk programmering (Kommenter ut ved bruk av mixed integer!)
+    %% Kvadratisk programmering (Kommenter ut ved bruk av blandet heltall!)
     
     AeqQP = [Aeq2 Aeq1 I0];
   
